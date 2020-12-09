@@ -1,7 +1,7 @@
 {
   "name": "impostor",
   "version": "1.0.0",
-  "description": "trabajo de procesos 2020",
+  "description": "trabajo de procesos",
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/.bin/jasmine-node servidor"
@@ -10,6 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/alberto-ontur/impostor.git"
   },
+
   "keywords": [
     "juego"
   ],
