@@ -1,2 +1,2 @@
 # El juego del Impostor
-El trabajo de la asignatura del curso 20-21
+El trabajo de PIS del curso 20-21
