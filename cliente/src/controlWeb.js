@@ -61,7 +61,7 @@ function ControlWeb($){
 	    this.limpiar();
 	    //$('#mER').remove();
 	    var cadena='<div id="mER"><h3>Esperando rival</h3>';
-	    cadena=cadena+'<img id="gif" src="cliente/img/waiting.jpg"><br>';
+	    cadena=cadena+'<img id="gif" src="cliente/img/esperando.gif"><br>';
 	    if (ws.owner){
 			cadena=cadena+'<input type="button" class="btn btn-primary btn-md" id="iniciar" value="Iniciar partida">';    
 		}

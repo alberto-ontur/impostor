@@ -339,6 +339,33 @@ function lanzarJuego(){
     crear.physics.add.collider(jugadores[nick], worldLayer);
   }
 
+  function mover(direccion,nick,numJugador,x,y)
+  {
+    var remoto=jugadores[nick];
+    const speed = 175;
+    const prevVelocity = player.body.velocity.clone();
+    const nombre=recursos[numJugador].sprite;
+   if (remoto)
+  {
+    remoto.body.setVelocity(0);
+    remoto.setX(x);
+    remoto.setY(y);
+    remoto.body.velocity.normalize().scale(speed);
+    if (direccion=="left") {
+      remoto.anims.play(nombre+"-left-walk", true);
+    } else if (direccion=="right") {
+      remoto.anims.play(nombre+"-right-walk", true);
+    } else if (direccion=="up") {
+      remoto.anims.play(nombre+"-back-walk", true);
+    } else if (direccion=="down") {
+      remoto.anims.play(nombre+"-front-walk", true);
+    } else {
+      remoto.anims.stop();
+    }
+  }
+  }
+
+
   function moverRemoto(direccion,nick,numJugador)
   {
     const speed = 175;
@@ -389,6 +416,7 @@ function lanzarJuego(){
     } else {
       player.anims.stop();
 
+      ws.movimiento(player.body.x, player.body.y);
       // If we were moving, pick and idle frame to use
       // if (prevVelocity.x < 0) player.setTexture("gabe", "gabe-left-walk");
       // else if (prevVelocity.x > 0) player.setTexture("gabe", "gabe-right-walk");

@@ -43,8 +43,8 @@ function ClienteWS(){
 	this.atacar=function(inocente){
 		this.socket.emit("atacar",this.nick,this.codigo,inocente);
 	}
-	this.movimiento=function(direccion){
-		this.socket.emit("movimiento",this.nick,this.codigo,this.numJugador,direccion);
+	this.movimiento=function(x,y){
+		this.socket.emit("movimiento",this.nick,this.codigo,this.numJugador,x,y);
 	}
 
 	//servidor WS dentro del cliente
@@ -101,7 +101,8 @@ function ClienteWS(){
 			}
 		});
 		this.socket.on("moverRemoto",function(datos){
-			moverRemoto(datos.direccion,datos.nick,datos.numJugador);
+			mover(datos.nick,datos.x, datos.y);
+			//moveremoto()
 		})
 		this.socket.on("votacion",function(data){
 			console.log(data);

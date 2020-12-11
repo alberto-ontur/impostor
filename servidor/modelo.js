@@ -1,3 +1,6 @@
+var minimo = 4;
+var maximo = 10;
+
 function Juego(){
 	this.partidas={};
 	this.crearPartida=function(num,owner){
@@ -21,7 +24,7 @@ function Juego(){
 		return res;
 	}
 	this.numeroValido=function(num){
-		return (num>=4 && num<=10)
+		return (num>=minimo && num<=maximo)
 	}
 	this.obtenerCodigo=function(){
 		let cadena="ABCDEFGHIJKLMNOPQRSTUVXYZ";
@@ -141,7 +144,7 @@ function Partida(num,owner,codigo,juego){
 		return Object.keys(this.usuarios).length;
 	}
 	this.comprobarMinimo=function(){
-		return this.numeroJugadores()>=4
+		return this.numeroJugadores()>=minimo
 	}
 	this.comprobarMaximo=function(){
 		return this.numeroJugadores()<this.maximo;
