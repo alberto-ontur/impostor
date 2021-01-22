@@ -5,13 +5,14 @@
  */
 
 function lanzarJuego(){
+   console.log("antes de juego");
   game = new Phaser.Game(config);
 }
 
   const config = {
     type: Phaser.AUTO,
-    width: 800,
-    height: 600,
+    width: 400,
+    height: 400,
     parent: "game-container",
     pixelArt: true,
     physics: {
@@ -38,9 +39,17 @@ function lanzarJuego(){
   let map;
   var crear;
   var spawnPoint;
-  var recursos=[{frame:1,sprite:"jugador1"},{frame:4,sprite:"jugador2"},{frame:7,sprite:"jugador3"},{frame:10,sprite:"jugador4"},{frame:13,sprite:"jugador5"},{frame:16,sprite:"jugador6"},{frame:19,sprite:"jugador7"},{frame:22,sprite:"jugador8"},{frame:1,sprite:"jugador9"},{frame:4,sprite:"jugador10"}];
+  var recursos=[{frame:7,sprite:"jugador1"},{frame:4,sprite:"jugador2"},{frame:10,sprite:"jugador3"},{frame:1,sprite:"jugador4"},{frame:1,sprite:"jugador5"},{frame:1,sprite:"jugador6"},{frame:55,sprite:"jugador7"},{frame:49,sprite:"jugador8"},{frame:1,sprite:"jugador9"},{frame:52,sprite:"jugador10"}];
+  var remotos;
+  var muertos;
+  var capaTareas;
+  var tareasOn=true;
+  var ataquesOn=true;
+  var final=false;
 
   function preload() {
+    console.log("entra en preload ");
+
     this.load.image("tiles", "cliente/assets/tilesets/tuxmon-sample-32px-extruded.png");
     this.load.tilemapTiledJSON("map", "cliente/assets/tilemaps/tuxemon-town2.json");
 
@@ -53,11 +62,18 @@ function lanzarJuego(){
     //this.load.spritesheet("gabe","cliente/assets/images/gabe.png",{frameWidth:24,frameHeight:24});
     //this.load.spritesheet("gabe","cliente/assets/images/male01-2.png",{frameWidth:32,frameHeight:32});
    // this.load.spritesheet("varios","cliente/assets/images/final2.png",{frameWidth:24,frameHeight:32});
-    this.load.spritesheet("jugadores","cliente/assets/images/jugadores1.png",{frameWidth:32,frameHeight:48});
-    this.load.spritesheet("jugadores2","cliente/assets/images/jugadores2.png",{frameWidth:32,frameHeight:48});
+    this.load.spritesheet("jugadores1","cliente/assets/images/jugadores1.png",{frameWidth:48,frameHeight:56});
+    this.load.spritesheet("jugadores2","cliente/assets/images/jugadores2.png",{frameWidth:48,frameHeight:48});
+	this.load.spritesheet("jugadores3","cliente/assets/images/jugadores3.png",{frameWidth:48,frameHeight:48});
+	this.load.spritesheet("jugadores4","cliente/assets/images/jugadores4.png",{frameWidth:48,frameHeight:48});
+	this.load.spritesheet("jugadores5","cliente/assets/images/jugadores5.png",{frameWidth:48,frameHeight:48});
+	this.load.spritesheet("jugadores6","cliente/assets/images/jugadores6.png",{frameWidth:48,frameHeight:52});
+	this.load.spritesheet("portal","cliente/assets/images/portal.png",{frameWidth:48,frameHeight:48});
+  this.load.spritesheet("muertos","cliente/assets/images/muertos56.png",{frameWidth:56,frameHeight:50});
   }
 
   function create() {
+    console.log("entra en create");
     crear=this;
     map = crear.make.tilemap({ key: "map" });
 
@@ -68,9 +84,11 @@ function lanzarJuego(){
     // Parameters: layer name (or index) from Tiled, tileset, x, y
     const belowLayer = map.createStaticLayer("Below Player", tileset, 0, 0);
     worldLayer = map.createStaticLayer("World", tileset, 0, 0);
+   // capaTareas = map.createStaticLayer("capaTareas", tileset, 0, 0);
     const aboveLayer = map.createStaticLayer("Above Player", tileset, 0, 0);
 
     worldLayer.setCollisionByProperty({ collides: true });
+ // capaTareas.setCollisionByProperty({ collides: true });
 
     // By default, everything gets depth sorted on the screen in the order we created things. Here, we
     // want the "Above Player" layer to sit on top of the player, so we explicitly give it a depth.
@@ -91,14 +109,15 @@ function lanzarJuego(){
     // // Watch the player and worldLayer for collisions, for the duration of the scene:
     //this.physics.add.collider(player, worldLayer);
 
+console.log("antes de animaciones");
 
       const anims = crear.anims;
       anims.create({
         key: "jugador1-front-walk",
-        frames: anims.generateFrameNames("jugadores", {
+        frames: anims.generateFrameNames("jugadores1", {
           //prefix: "misa-left-walk.",
-          start: 0,
-          end: 2,
+          start: 6,
+          end: 8,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -106,10 +125,10 @@ function lanzarJuego(){
       });
       anims.create({
         key: "jugador1-left-walk",
-        frames: anims.generateFrameNames("jugadores", {
+        frames: anims.generateFrameNames("jugadores1", {
           //prefix: "misa-left-walk.",
-          start: 12,
-          end: 14,
+          start: 18,
+          end: 20,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -117,10 +136,10 @@ function lanzarJuego(){
       });
       anims.create({
         key: "jugador1-right-walk",
-        frames: anims.generateFrameNames("jugadores", {
+        frames: anims.generateFrameNames("jugadores1", {
           //prefix: "misa-left-walk.",
-          start: 24,
-          end: 26,
+          start: 30,
+          end: 32,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -128,10 +147,10 @@ function lanzarJuego(){
       });
       anims.create({
         key: "jugador1-back-walk",
-        frames: anims.generateFrameNames("jugadores", {
+        frames: anims.generateFrameNames("jugadores1", {
           //prefix: "misa-left-walk.",
-          start: 36,
-          end: 38,
+          start: 42,
+          end: 44,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -142,7 +161,7 @@ function lanzarJuego(){
       const anims2 = crear.anims;
       anims2.create({
         key: "jugador2-front-walk",
-        frames: anims.generateFrameNames("jugadores", {
+        frames: anims.generateFrameNames("jugadores3", {
           //prefix: "misa-left-walk.",
           start: 3,
           end: 5,
@@ -153,7 +172,7 @@ function lanzarJuego(){
       });
       anims2.create({
         key: "jugador2-left-walk",
-        frames: anims.generateFrameNames("jugadores", {
+        frames: anims.generateFrameNames("jugadores3", {
           //prefix: "misa-left-walk.",
           start: 15,
           end: 17,
@@ -164,7 +183,7 @@ function lanzarJuego(){
       });
       anims2.create({
         key: "jugador2-right-walk",
-        frames: anims.generateFrameNames("jugadores", {
+        frames: anims.generateFrameNames("jugadores3", {
           //prefix: "misa-left-walk.",
           start: 27,
           end: 29,
@@ -175,7 +194,7 @@ function lanzarJuego(){
       });
       anims2.create({
         key: "jugador2-back-walk",
-        frames: anims.generateFrameNames("jugadores", {
+        frames: anims.generateFrameNames("jugadores3", {
           //prefix: "misa-left-walk.",
           start: 39,
           end: 41,
@@ -189,10 +208,10 @@ function lanzarJuego(){
       const anims3 = crear.anims;
       anims3.create({
         key: "jugador3-front-walk",
-        frames: anims.generateFrameNames("jugadores", {
+        frames: anims.generateFrameNames("jugadores6", {
           //prefix: "misa-left-walk.",
-          start: 6,
-          end: 8,
+          start: 9,
+          end: 11,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -200,10 +219,10 @@ function lanzarJuego(){
       });
       anims3.create({
         key: "jugador3-left-walk",
-        frames: anims.generateFrameNames("jugadores", {
+        frames: anims.generateFrameNames("jugadores6", {
           //prefix: "misa-left-walk.",
-          start: 18,
-          end: 20,
+          start: 21,
+          end: 23,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -211,10 +230,10 @@ function lanzarJuego(){
       });
       anims3.create({
         key: "jugador3-right-walk",
-        frames: anims.generateFrameNames("jugadores", {
+        frames: anims.generateFrameNames("jugadores6", {
           //prefix: "misa-left-walk.",
-          start: 30,
-          end: 32,
+          start: 33,
+          end: 35,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -222,10 +241,10 @@ function lanzarJuego(){
       });
       anims3.create({
         key: "jugador3-back-walk",
-        frames: anims.generateFrameNames("jugadores", {
+        frames: anims.generateFrameNames("jugadores6", {
           //prefix: "misa-left-walk.",
-          start: 42,
-          end: 44,
+          start: 45,
+          end: 47,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -236,10 +255,10 @@ function lanzarJuego(){
       const anims4 = crear.anims;
       anims4.create({
         key: "jugador4-front-walk",
-        frames: anims.generateFrameNames("jugadores", {
+        frames: anims.generateFrameNames("jugadores5", {
           //prefix: "misa-left-walk.",
-          start: 9,
-          end: 11,
+          start: 0,
+          end: 2,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -247,10 +266,10 @@ function lanzarJuego(){
       });
       anims4.create({
         key: "jugador4-left-walk",
-        frames: anims.generateFrameNames("jugadores", {
+        frames: anims.generateFrameNames("jugadores5", {
           //prefix: "misa-left-walk.",
-          start: 21,
-          end: 23,
+          start: 12,
+          end: 14,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -258,10 +277,10 @@ function lanzarJuego(){
       });
       anims4.create({
         key: "jugador4-right-walk",
-        frames: anims.generateFrameNames("jugadores", {
+        frames: anims.generateFrameNames("jugadores5", {
           //prefix: "misa-left-walk.",
-          start: 33,
-          end: 35,
+          start: 24,
+          end: 26,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -269,10 +288,10 @@ function lanzarJuego(){
       });
       anims4.create({
         key: "jugador4-back-walk",
-        frames: anims.generateFrameNames("jugadores", {
+        frames: anims.generateFrameNames("jugadores5", {
           //prefix: "misa-left-walk.",
-          start: 45,
-          end: 47,
+          start: 36,
+          end: 38,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -281,11 +300,11 @@ function lanzarJuego(){
 
       const anims5 = crear.anims;
       anims5.create({
-        key: "jugador5-front-walk",
-        frames: anims.generateFrameNames("jugadores", {
+         key: "jugador5-front-walk",
+        frames: anims.generateFrameNames("jugadores2", {
           //prefix: "misa-left-walk.",
-          start: 48,
-          end: 50,
+          start: 0,
+          end: 2,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -293,10 +312,10 @@ function lanzarJuego(){
       });
       anims5.create({
         key: "jugador5-left-walk",
-        frames: anims.generateFrameNames("jugadores", {
+        frames: anims.generateFrameNames("jugadores2", {
           //prefix: "misa-left-walk.",
-          start: 60,
-          end: 62,
+          start: 12,
+          end: 14,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -304,10 +323,10 @@ function lanzarJuego(){
       });
       anims5.create({
         key: "jugador5-right-walk",
-        frames: anims.generateFrameNames("jugadores", {
+        frames: anims.generateFrameNames("jugadores2", {
           //prefix: "misa-left-walk.",
-          start: 72,
-          end: 74,
+          start: 24,
+          end: 26,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -315,10 +334,10 @@ function lanzarJuego(){
       });
       anims5.create({
         key: "jugador5-back-walk",
-        frames: anims.generateFrameNames("jugadores", {
+        frames: anims.generateFrameNames("jugadores2", {
           //prefix: "misa-left-walk.",
-          start: 84,
-          end: 86,
+          start: 36,
+          end: 38,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -329,10 +348,10 @@ function lanzarJuego(){
       const anims6 = crear.anims;
       anims6.create({
         key: "jugador6-front-walk",
-        frames: anims.generateFrameNames("jugadores", {
+        frames: anims.generateFrameNames("jugadores4", {
           //prefix: "misa-left-walk.",
-          start: 51,
-          end: 53,
+          start: 0,
+          end: 2,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -340,10 +359,10 @@ function lanzarJuego(){
       });
       anims6.create({
         key: "jugador6-left-walk",
-        frames: anims.generateFrameNames("jugadores", {
+        frames: anims.generateFrameNames("jugadores4", {
           //prefix: "misa-left-walk.",
-          start: 63,
-          end: 65,
+          start: 12,
+          end: 14,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -351,10 +370,10 @@ function lanzarJuego(){
       });
       anims6.create({
         key: "jugador6-right-walk",
-        frames: anims.generateFrameNames("jugadores", {
+        frames: anims.generateFrameNames("jugadores4", {
           //prefix: "misa-left-walk.",
-          start: 75,
-          end: 77,
+          start: 24,
+          end: 26,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -362,10 +381,10 @@ function lanzarJuego(){
       });
       anims6.create({
         key: "jugador6-back-walk",
-        frames: anims.generateFrameNames("jugadores", {
+        frames: anims.generateFrameNames("jugadores4", {
           //prefix: "misa-left-walk.",
-          start: 87,
-          end: 89,
+          start: 36,
+          end: 38,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -375,8 +394,8 @@ function lanzarJuego(){
 
       const anims7 = crear.anims;
       anims7.create({
-        key: "jugador7-front-walk",
-        frames: anims.generateFrameNames("jugadores", {
+		key: "jugador7-front-walk",
+        frames: anims.generateFrameNames("jugadores3", {
           //prefix: "misa-left-walk.",
           start: 54,
           end: 56,
@@ -387,7 +406,7 @@ function lanzarJuego(){
       });
       anims7.create({
         key: "jugador7-left-walk",
-        frames: anims.generateFrameNames("jugadores", {
+        frames: anims.generateFrameNames("jugadores3", {
           //prefix: "misa-left-walk.",
           start: 66,
           end: 68,
@@ -398,7 +417,7 @@ function lanzarJuego(){
       });
       anims7.create({
         key: "jugador7-right-walk",
-        frames: anims.generateFrameNames("jugadores", {
+        frames: anims.generateFrameNames("jugadores3", {
           //prefix: "misa-left-walk.",
           start: 78,
           end: 80,
@@ -409,7 +428,7 @@ function lanzarJuego(){
       });
       anims7.create({
         key: "jugador7-back-walk",
-        frames: anims.generateFrameNames("jugadores", {
+        frames: anims.generateFrameNames("jugadores3", {
           //prefix: "misa-left-walk.",
           start: 90,
           end: 92,
@@ -423,10 +442,10 @@ function lanzarJuego(){
       const anims8 = crear.anims;
       anims8.create({
         key: "jugador8-front-walk",
-        frames: anims.generateFrameNames("jugadores", {
+        frames: anims.generateFrameNames("jugadores5", {
           //prefix: "misa-left-walk.",
-          start: 57,
-          end: 59,
+          start: 48,
+          end: 50,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -434,10 +453,10 @@ function lanzarJuego(){
       });
       anims8.create({
         key: "jugador8-left-walk",
-        frames: anims.generateFrameNames("jugadores", {
+        frames: anims.generateFrameNames("jugadores5", {
           //prefix: "misa-left-walk.",
-          start: 69,
-          end: 71,
+          start: 60,
+          end: 62,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -445,10 +464,10 @@ function lanzarJuego(){
       });
       anims8.create({
         key: "jugador8-right-walk",
-        frames: anims.generateFrameNames("jugadores", {
+        frames: anims.generateFrameNames("jugadores5", {
           //prefix: "misa-left-walk.",
-          start: 81,
-          end: 83,
+          start: 72,
+          end: 74,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -456,10 +475,10 @@ function lanzarJuego(){
       });
       anims8.create({
         key: "jugador8-back-walk",
-        frames: anims.generateFrameNames("jugadores", {
+        frames: anims.generateFrameNames("jugadores5", {
           //prefix: "misa-left-walk.",
-          start: 93,
-          end: 95,
+          start: 84,
+          end: 86,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -470,10 +489,10 @@ function lanzarJuego(){
       const anims9 = crear.anims;
       anims9.create({
         key: "jugador9-front-walk",
-        frames: anims.generateFrameNames("jugadores2", {
+        frames: anims.generateFrameNames("jugadores6", {
           //prefix: "misa-left-walk.",
-          start: 0,
-          end: 2,
+          start: 54,
+          end: 56,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -481,10 +500,10 @@ function lanzarJuego(){
       });
       anims9.create({
         key: "jugador9-left-walk",
-        frames: anims.generateFrameNames("jugadores2", {
+        frames: anims.generateFrameNames("jugadores6", {
           //prefix: "misa-left-walk.",
-          start: 12,
-          end: 14,
+          start: 66,
+          end: 68,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -492,10 +511,10 @@ function lanzarJuego(){
       });
       anims9.create({
         key: "jugador9-right-walk",
-        frames: anims.generateFrameNames("jugadores2", {
+        frames: anims.generateFrameNames("jugadores6", {
           //prefix: "misa-left-walk.",
-          start: 24,
-          end: 26,
+          start: 78,
+          end: 80,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -503,10 +522,10 @@ function lanzarJuego(){
       });
       anims9.create({
         key: "jugador9-back-walk",
-        frames: anims.generateFrameNames("jugadores2", {
+        frames: anims.generateFrameNames("jugadores6", {
           //prefix: "misa-left-walk.",
-          start: 36,
-          end: 38,
+          start: 90,
+          end: 92,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -516,11 +535,11 @@ function lanzarJuego(){
 
       const anims10 = crear.anims;
       anims10.create({
-        key: "jugador10-front-walk",
+     	key: "jugador10-front-walk",
         frames: anims.generateFrameNames("jugadores2", {
           //prefix: "misa-left-walk.",
-          start: 3,
-          end: 5,
+          start: 51,
+          end: 53,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -530,8 +549,8 @@ function lanzarJuego(){
         key: "jugador10-left-walk",
         frames: anims.generateFrameNames("jugadores2", {
           //prefix: "misa-left-walk.",
-          start: 15,
-          end: 17,
+          start: 63,
+          end: 65,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -541,8 +560,8 @@ function lanzarJuego(){
         key: "jugador10-right-walk",
         frames: anims.generateFrameNames("jugadores2", {
           //prefix: "misa-left-walk.",
-          start: 27,
-          end: 29,
+          start: 75,
+          end: 77,
           //zeroPad: 3
         }),
         //frameRate: 10,
@@ -552,40 +571,104 @@ function lanzarJuego(){
         key: "jugador10-back-walk",
         frames: anims.generateFrameNames("jugadores2", {
           //prefix: "misa-left-walk.",
-          start: 39,
-          end: 41,
+          start: 87,
+          end: 89,
           //zeroPad: 3
         }),
         //frameRate: 10,
         repeat: -1
       });
 
-
+console.log("despues de animaciones");
 
     // const camera = this.cameras.main;
     // camera.startFollow(player);
     // camera.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
 
     cursors = crear.input.keyboard.createCursorKeys();
-   
+    remotos=crear.add.group();
+    muertos=crear.add.group();
+    teclaA=crear.input.keyboard.addKey('a');
+    teclaV=crear.input.keyboard.addKey('v');
+    teclaT=crear.input.keyboard.addKey('t');
     lanzarJugador(ws.numJugador);
     ws.estoyDentro();
+
+    console.log("estoy dentor");
   }
 
-  function lanzarJugador(numJugador){
-    player = crear.physics.add.sprite(spawnPoint.x, spawnPoint.y,"jugadores",recursos[numJugador].frame);    
+    function crearColision(){
+    if (crear && ws.impostor){
+      crear.physics.add.overlap(player,remotos,kill,()=>{return ataquesOn});
+    }
+  }  
+
+  function kill(sprite,inocente){
+    var nick=inocente.nick;
+    if (teclaA.isDown){
+      ataquesOn=false;
+      ws.atacar(nick);
+    }
+  }
+//
+  function dibujarMuereInocente(inocente){
+    var x=jugadores[inocente].x;
+    var y=jugadores[inocente].y;
+    var numJugador=jugadores[inocente].numJugador;
+
+    var muerto = crear.physics.add.sprite(x,y,"muertos",numJugador);
+    muertos.add(muerto);
+
+    jugadores[inocente].setTexture("muertos",numJugador);
+    //agregar jugadores[inocente] al grupo muertos    
+
+    crear.physics.add.overlap(player,muertos,votacion);
+  }
+  //
+
+  function votacion(sprite,muerto){
+    //comprobar si el jugador local pulsa "v"
+    //en ese caso, llamamos al servidor para lanzar votacion
+    if (teclaV.isDown){
+      ws.lanzarVotacion();
+    }
+  }
+
+  function tareas(sprite,objeto){
+    if (ws.encargo==objeto.properties.tarea && teclaT.isDown){
+      tareasOn=false;      
+      console.log("realizar tarea "+ws.encargo);
+      ws.realizarTarea(); //o hacer la llamada dentro de cw
+      cw.mostrarModalTarea(ws.encargo);
+    }
+  }
+
+  function lanzarJugador(nick, numJugador){
+    var x=spawnPoint.x;
+    player = crear.physics.add.sprite(x, spawnPoint.y,"portal",0);    
     // Watch the player and worldLayer for collisions, for the duration of the scene:
     crear.physics.add.collider(player, worldLayer);
+   // crear.physics.add.collider(player, capaTareas,tareas,()=>{return tareasOn});
     //crear.physics.add.collider(player2, worldLayer);
+
+    jugadores[nick]=player;
+    jugadores[nick].nick=nick;
+    jugadores[nick].numJugador=numJugador;
+
     camera = crear.cameras.main;
     camera.startFollow(player);
     camera.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
   }
 
   function lanzarJugadorRemoto(nick,numJugador){
-    var frame=recursos[numJugador].frame;
-    jugadores[nick]=crear.physics.add.sprite(spawnPoint.x, spawnPoint.y,"jugadores",frame);   
+
+    var x=spawnPoint.x;
+		jugadores[nick]=crear.physics.add.sprite(spawnPoint.x, spawnPoint.y,"portal",0);
+	
     crear.physics.add.collider(jugadores[nick], worldLayer);
+    jugadores[nick].nick=nick;
+    jugadores[nick].numJugador=numJugador;
+    remotos.add(jugadores[nick]);
   }
 
   function mover(datos)
@@ -599,7 +682,7 @@ function lanzarJuego(){
     const speed = 175;
   //  const prevVelocity = player.body.velocity.clone();
     const nombre=recursos[numJugador].sprite;
-    if (remoto)
+    if (remoto&&!final)
     {
       remoto.body.setVelocity(0);
       remoto.setX(x);
@@ -619,16 +702,11 @@ function lanzarJuego(){
     }
   }
 
-
-  // function moverRemoto(direccion,nick,numJugador)
-  // {
-  //   const speed = 175;
-  //   var remoto=jugadores[nick];
-
-  //   if (direccion=="left"){
-  //     remoto.body.setVelocityX(-speed);
-  //   }
-  // }
+  function finPartida(data){
+    final=true;
+    //remoto=undefined;
+    cw.mostrarModalSimple("Fin de la partida "+data);
+  }
 
   function update(time, delta) {
     const speed = 175;
@@ -637,6 +715,7 @@ function lanzarJuego(){
 
     const nombre=recursos[ws.numJugador].sprite;
 
+    if (!final){
     // Stop any previous movement from the last frame
     player.body.setVelocity(0);
     //player2.body.setVelocity(0);
@@ -683,3 +762,4 @@ function lanzarJuego(){
       // else if (prevVelocity.y > 0) player.setTexture("gabe", "gabe-front-walk");
     }
   }
+}
