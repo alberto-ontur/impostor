@@ -1,16 +1,10 @@
-function Juego(min){
-	console.log("Entra a juego");
-	this.min=min;
+function Juego(){
 	this.partidas={};
-	console.log("antes de crear");
 	this.crearPartida=function(num,owner){
 		let codigo="fallo";
-		console.log("let codigo "+codigo);
 		if (!this.partidas[codigo] && this.numeroValido(num)){
-			console.log("Entra al if");
 			codigo=this.obtenerCodigo();
 			this.partidas[codigo]=new Partida(num,owner,codigo,this);
-			//owner.partida=this.partidas[codigo];
 		}
 		else{
 			console.log(codigo);
@@ -22,12 +16,10 @@ function Juego(min){
 		if (this.partidas[codigo]){
 			res=this.partidas[codigo].agregarUsuario(nick);
 		}
-		//console.log(res);
 		return res;
 	}
 	this.numeroValido=function(num){
-		console.log(num+"Entra al numeroValido "+this.min);
-		return (num>=this.min && num<=10)
+		return (num>=4 && num<=10)
 	}
 	this.obtenerCodigo=function(){
 		let cadena="ABCDEFGHIJKLMNOPQRSTUVXYZ";
@@ -70,7 +62,6 @@ function Juego(min){
 	this.iniciarPartida=function(nick,codigo){
 		var owner=this.partidas[codigo].nickOwner;
 		if (nick==owner){
-			console.log("iniciar partida - servidor - juego");
 			this.partidas[codigo].iniciarPartida();
 		}
 	}
@@ -104,6 +95,9 @@ function Juego(min){
 	}
 	this.realizarTarea=function(nick,codigo){
 		this.partidas[codigo].realizarTarea(nick);
+	}
+	this.terminarTarea=function(nick,codigo){
+		this.partidas[codigo].terminarTarea(nick);
 	}
 }
 
@@ -161,13 +155,12 @@ function Partida(num,owner,codigo,juego){
 		return Object.keys(this.usuarios).length;
 	}
 	this.comprobarMinimo=function(){
-		return this.numeroJugadores()>=this.juego.min;
+		return this.numeroJugadores()>=4;
 	}
 	this.comprobarMaximo=function(){
 		return this.numeroJugadores()<this.maximo;
 	}
 	this.iniciarPartida=function(){
-		console.log("iniciar partida - servidor - partida");
 		this.fase.iniciarPartida(this);
 	}
 
@@ -364,8 +357,14 @@ this.mezclarEncargos= function() {
 	this.realizarTarea=function(nick){
 		this.fase.realizarTarea(nick,this);
 	}
+	this.terminarTarea=function(nick){
+		this.fase.terminarTarea(nick,this);
+	}
 	this.puedeRealizarTarea=function(nick){
 		this.usuarios[nick].realizarTarea();
+	}
+	this.puedeTerminarTarea=function(nick){
+		this.usuarios[nick].terminarTarea();
 	}
 	this.tareaTerminada=function(){
 		if (this.comprobarTareasTerminadas()){
@@ -403,12 +402,11 @@ function Inicial(){
 	this.nombre="inicial";
 	this.agregarUsuario=function(nick,partida){
 		return partida.puedeAgregarUsuario(nick);
-		// if (partida.comprobarMinimo()){
-		// 	partida.fase=new Completado();
-		// }		
+		 if (partida.comprobarMinimo()){
+		 	partida.fase=new Completado();
+		 }		
 	}
 	this.iniciarPartida=function(partida){
-		console.log("iniciar partida - servidor - fase inicial");
 		console.log("Faltan jugadores");
 	}
 	this.abandonarPartida=function(nick,partida){
@@ -419,18 +417,19 @@ function Inicial(){
 	this.atacar=function(inocente){}
 	this.lanzarVotacion=function(){}
 	this.realizarTarea=function(){}
+	this.terminarTarea=function(){}
 }
 
 function Completado(){
 	this.nombre="completado";
 	this.iniciarPartida=function(partida){
-		console.log("iniciar partida - servidor - fase completado");
 		partida.puedeIniciarPartida();
 		//partida.fase=new Jugando();
 		//asignar encargos: secuencialmente a todos los usr
 		//asignar impostor: dado el array usuario (Object.keys)
 	}
 	this.agregarUsuario=function(nick,partida){
+		console.log("maximo dentro de la partid: "+this.maximo);
 		if (partida.comprobarMaximo()){
 			return partida.puedeAgregarUsuario(nick);
 		}
@@ -439,6 +438,7 @@ function Completado(){
 		}
 	}
 	this.abandonarPartida=function(nick,partida){
+		console.log("llega hasta 5 + codigo completado");
 		partida.eliminarUsuario(nick);
 		if (!partida.comprobarMinimo()){
 			partida.fase=new Inicial();
@@ -447,6 +447,7 @@ function Completado(){
 	this.atacar=function(inocente){}
 	this.lanzarVotacion=function(){}
 	this.realizarTarea=function(){}
+	this.terminarTarea=function(){}
 }
 
 function Jugando(){
@@ -459,6 +460,7 @@ function Jugando(){
 		console.log("iniciar partida - servidor - fase jugando");
 	}
 	this.abandonarPartida=function(nick,partida){
+		console.log("llega hasta 5 + codigo jugando");
 		partida.eliminarUsuario(nick);
 		//comprobar si termina la partida
 	}
@@ -471,6 +473,9 @@ function Jugando(){
 	this.votar=function(sospechoso,partida){}
 	this.realizarTarea=function(nick,partida){
 		partida.puedeRealizarTarea(nick);
+	}
+	this.terminarTarea=function(nick,partida){
+		partida.puedeTerminarTarea(nick);
 	}
 }
 
@@ -486,6 +491,7 @@ function Votacion(){
 		partida.puedeVotar(sospechoso);
 	}
 	this.realizarTarea=function(){}
+	this.terminarTarea=function(){}
 }
 
 function Final(){
@@ -502,6 +508,7 @@ function Final(){
 	this.atacar=function(inocente){}
 	this.lanzarVotacion=function(){}
 	this.realizarTarea=function(){}
+	this.terminarTarea=function(){}
 }
 
 function Usuario(nick){
@@ -531,6 +538,7 @@ function Usuario(nick){
 		this.realizado=this.maxTarea;
 	}
 	this.abandonarPartida=function(){
+		console.log("llega hasta 5 + codigo usuario");
 		this.partida.abandonarPartida(this.nick);
 		if (this.partida.numeroJugadores()<=0){
 			console.log(this.nick," era el último jugador");
@@ -577,6 +585,14 @@ function Usuario(nick){
 		}
 		console.log("usuario "+this.nick+" realiza tarea "+this.encargo+" estadoTarea: "+this.estadoTarea);
 	}
+	this.terminarTarea=function(){
+		if (!this.impostor){
+			this.realizado = this.maxTarea;
+				this.estadoTarea="completada";
+				this.partida.tareaTerminada();
+		}
+		console.log("usuario "+this.nick+" termina completamente la tarea "+this.encargo);
+	}
 	this.obtenerPercentTarea=function(){
 		return 100*(this.realizado/this.maxTarea);
 	}
@@ -608,20 +624,6 @@ function Muerto(){
 function randomInt(low, high) {
 	return Math.floor(Math.random() * (high - low) + low);
 }
-
-// function inicio(){
-// 	juego=new Juego();
-// 	var usr=new Usuario("pepe");
-// 	var codigo=juego.crearPartida(4,usr);
-// 	if (codigo!="fallo"){
-// 		juego.unirAPartida(codigo,"luis");
-// 		juego.unirAPartida(codigo,"luisa");
-// 		juego.unirAPartida(codigo,"luisito");
-// 		//juego.unirAPartida(codigo,"pepe2");
-	
-// 		usr.iniciarPartida();
-// 	}
-// }
 
 module.exports.Juego=Juego;
 module.exports.Usuario=Usuario;

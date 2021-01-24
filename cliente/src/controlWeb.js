@@ -1,6 +1,7 @@
 function ControlWeb($){
 
-	this.mostrarCrearPartida=function(min){
+	this.mostrarCrearPartida=function(){
+		$("#mostrarCP").remove();
 		var cadena='<div id="mostrarCP"><h3>Crear partida</h3>';
 		cadena=cadena+'<div class="form-group">';
 		cadena=cadena+'<label for="nick">Nick:</label>';
@@ -8,7 +9,7 @@ function ControlWeb($){
 		cadena=cadena+'</div>';
 		cadena=cadena+'<div class="form-group">';
 		cadena=cadena+'<label for="num">Número:</label>';
-		cadena=cadena+'<input type="number" min="'+min+'" max="10" value="'+min+'" class="form-control" id="num">';
+		cadena=cadena+'<input type="number" min="4" max="10" value="4" class="form-control" id="num">';
 		cadena=cadena+'</div>';
 		cadena=cadena+'<button type="button" id="btnCrear" class="btn btn-primary">Crear partida</button>';
 		cadena=cadena+'</div>';
@@ -59,17 +60,21 @@ function ControlWeb($){
 
 	this.mostrarEsperandoRival=function(){
 	    this.limpiar();
-	    //$('#mER').remove();
 	    var cadena='<div id="mER"><h3>Esperando rival</h3>';
 	    cadena=cadena+'<img id="gif" src="cliente/assets//images/esperando.gif"><br>';
 	    if (ws.owner){
 			cadena=cadena+'<input type="button" class="btn btn-primary btn-md" id="iniciar" value="Iniciar partida">';    
 		}
+		cadena=cadena+'<input type="button" class="btn btn-primary btn-md" id="abandonar" value="Abandonar partida">';
 		cadena=cadena+'</div>';
 	    $('#esperando').append(cadena);
 	    $('#iniciar').click(function(){
 	    	ws.iniciarPartida();
 	    });
+	    $('#abandonar').click(function(){
+	    	ws.abandonarPartida();
+	    });
+
 	  }
 
 	this.mostrarUnirAPartida=function(lista){
@@ -117,6 +122,8 @@ function ControlWeb($){
 		$('#mostrarListaEsperando').remove();
 	}
 
+
+
 	this.mostrarModalSimple=function(msg){
 		this.limpiarModal();
 		var cadena="<p id='avisarImpostor'>"+msg+'</p>';
@@ -135,7 +142,7 @@ function ControlWeb($){
 
 	this.mostrarModalVotacion=function(lista){
 		this.limpiarModal();
-		var cadena='<div id="votacion"><h3>Votación</h3>';		
+		var cadena='<div id="votacion"><h3>Votacion</h3>';		
 		cadena =cadena+'<div class="input-group">';
 	  	 for(var i=0;i<lista.length;i++){
 	  		cadena=cadena+'<div><input type="radio" name="optradio" value="'+lista[i].nick+'"> '+lista[i].nick+'</div>';

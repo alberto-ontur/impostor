@@ -7,6 +7,8 @@ function ClienteWS(){
 	this.impostor;
 	this.estado;
 	this.encargo;
+	this.terminado = false;
+
 	this.ini=function(){
 		this.socket=io.connect();
 		this.lanzarSocketSrv();
@@ -21,6 +23,9 @@ function ClienteWS(){
 	}
 	this.iniciarPartida=function(){
 		this.socket.emit("iniciarPartida",this.nick,this.codigo);
+	}
+	this.abandonarPartida=function(){
+		this.socket.emit("abandonarPartida",this.nick,this.codigo);
 	}
 	this.listaPartidasDisponibles=function(){
 		this.socket.emit("listaPartidasDisponibles");
@@ -53,6 +58,9 @@ function ClienteWS(){
 	this.realizarTarea=function(){
 		this.socket.emit("realizarTarea",this.nick,this.codigo);
 	}
+	this.terminarTarea=function(){
+		this.socket.emit("terminarTarea",this.nick,this.codigo);
+	}
 
 	//servidor WS dentro del cliente
 	this.lanzarSocketSrv=function(){
@@ -75,15 +83,33 @@ function ClienteWS(){
 			cli.nick=data.nick;
 			cli.numJugador=data.numJugador;
 			cli.estado="vivo";
+
 			console.log(data);
 			cw.mostrarEsperandoRival();
 		});
+		this.socket.on('sinUnir',function(data){
+			
+			cli.codigo=undefined;
+			cw.mostrarCrearPartida(4);
+
+			ws.listaPartidasDisponibles();
+		});
+		this.socket.on('partidaAbandonada',function(data){
+			cli.nick=undefined;
+			cli.codigo=undefined;
+			cli.owner=false;
+			cli.numJugador=undefined;
+			cli.estado=undefined;
+
+			cw.limpiar();
+			cw.mostrarCrearPartida(4);
+			cli.listaPartidasDisponibles();	
+		});
 		this.socket.on('nuevoJugador',function(lista){
-			//console.log(nick+" se une a la partida");
 			cw.mostrarListaJugadores(lista);
-			//cli.iniciarPartida();
 		});
 		this.socket.on('partidaIniciada',function(fase){
+			console.log("jugador: "+cli.nick);
 			console.log("Partida en fase: "+fase);
 			if (fase=="jugando"){
 				cli.obtenerEncargo();
@@ -121,8 +147,14 @@ function ClienteWS(){
 			console.log(data);
 			//cw.cerrarModal()
 			$('#modalGeneral').modal('toggle');
-			//mostrar otro modal
-			cw.mostrarModalSimple(data.elegido);
+
+			var resolucion = data.elegido;
+			if (resolucion == "no hay nadie elegido"){
+				cw.mostrarModalSimple("Tras muchas deliveraciones habeis decidido que no es posible identificar al enemigo, id con cuidado");
+			}
+			else{
+			cw.mostrarModalSimple("Ha sido duro, pero habeis deducido que "+data.elegido+" era el traidor, y juntos le habeis dado su merecido.");
+		}
 		});
 		this.socket.on("haVotado",function(data){
 			console.log(data);
@@ -134,8 +166,17 @@ function ClienteWS(){
 			cli.encargo=data.encargo;
 			if (data.impostor){
 				//$('#avisarImpostor').modal("show");
-				cw.mostrarModalSimple('eres el impostor');
-				//crearColision();
+				cw.mostrarModalSimple('Has decidido que tu especie será la única que sobrevivirá al ritual, utiliza la tecla a para atacar a tus adversarios.');
+			}
+			else{
+				var cadena='La guerra con los humanos ha llegado a un punto critico, pero la Alianza aún';
+				cadena=cadena+'tiene un ás en la manga, a traves de un ritual ancestral podreis trasladar a vuestra gente a un ';
+				cadena=cadena+'planeta idilico, para realizar el ritual debereís reunir los ingredientes necesarios.';
+				cadena=cadena+'Gracias a la magia del lugar podreis realizar vuestra tarea aunque murais, un noble sacrificio por el futuro de vuestra gente.';
+				cadena=cadena+'Aunque eso no ocurrirá, despues de todo estaís entre aliados ¿verdad?.'
+				cadena=cadena+'Para completar tu parte del ritual debes encontrar '+ws.encargo+', con 10 bastará, mejor apresurarse...'
+				
+				cw.mostrarModalSimple(cadena);   
 			}
 		});
 		this.socket.on("final",function(data){
@@ -151,42 +192,19 @@ function ClienteWS(){
 		});
 		this.socket.on("tareaRealizada",function(data){
 			console.log(data);
-			//tareasOn=true;
-		});
+			if (data.percent ==100){
+				cli.terminado = true;
+				cw.mostrarModalTarea("Ya has encontrado suficientes "+ws.encargo+" para el ritual, esperemos que tus compañeros no tarden...");
+      		}	
+     	 	else{
+      			cw.mostrarModalTarea("Has encontrado "+ws.encargo+" valid@s para el ritual, aun faltan unos poc@s...");
+    		}
+		});		
 		this.socket.on("hasAtacado",function(fase){
 			if (fase=="jugando"){
 				ataquesOn=true;
 			}
 		});
 	}
-
 	this.ini();
-}
-
-var ws2,ws3,ws4;
-function pruebasWS(){
-	ws2=new ClienteWS();
-	ws3=new ClienteWS();
-	ws4=new ClienteWS();
-	var codigo=ws.codigo;
-
-	ws2.unirAPartida("Juani",codigo);
-	ws3.unirAPartida("Juana",codigo);
-	ws4.unirAPartida("Juanan",codigo);
-
-	//ws.iniciarPartida();
-}
-
-function saltarVotos(){
-	ws.saltarVoto();
-	ws2.saltarVoto();
-	ws3.saltarVoto();
-	ws4.saltarVoto();
-}
-
-function encargos(){
-	ws.obtenerEncargo();
-	ws2.obtenerEncargo();
-	ws3.obtenerEncargo();
-	ws4.obtenerEncargo();
 }

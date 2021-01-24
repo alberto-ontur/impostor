@@ -5,7 +5,6 @@
  */
 
 function lanzarJuego(){
-   console.log("antes de juego");
   game = new Phaser.Game(config);
 }
 
@@ -44,15 +43,14 @@ function lanzarJuego(){
   var muertos;
   var spawnPoints;
   var capaTareas;
-  var tareasOn=true;
-  var ataquesOn=true;
   var final=false;
-  var tareasCompletadas=0;
+//  var tareaCompletada= false;
+
+
 
 
 
   function preload() {
-    console.log("entra en preload ");
 
     this.load.image("tiles", "cliente/assets/tilesets/completo.png");
     this.load.tilemapTiledJSON("map", "cliente/assets/tilemaps/mimapa.json");
@@ -68,16 +66,15 @@ function lanzarJuego(){
    // this.load.spritesheet("varios","cliente/assets/images/final2.png",{frameWidth:24,frameHeight:32});
     this.load.spritesheet("jugadores1","cliente/assets/images/jugadores1.png",{frameWidth:48,frameHeight:56});
     this.load.spritesheet("jugadores2","cliente/assets/images/jugadores2.png",{frameWidth:48,frameHeight:48});
-	this.load.spritesheet("jugadores3","cliente/assets/images/jugadores3.png",{frameWidth:48,frameHeight:48});
-	this.load.spritesheet("jugadores4","cliente/assets/images/jugadores4.png",{frameWidth:48,frameHeight:48});
-	this.load.spritesheet("jugadores5","cliente/assets/images/jugadores5.png",{frameWidth:48,frameHeight:48});
-	this.load.spritesheet("jugadores6","cliente/assets/images/jugadores6.png",{frameWidth:48,frameHeight:52});
-	this.load.spritesheet("portal","cliente/assets/images/portal.png",{frameWidth:48,frameHeight:48});
-  this.load.spritesheet("muertos","cliente/assets/images/muertos56.png",{frameWidth:56,frameHeight:50});
+	  this.load.spritesheet("jugadores3","cliente/assets/images/jugadores3.png",{frameWidth:48,frameHeight:48});
+	  this.load.spritesheet("jugadores4","cliente/assets/images/jugadores4.png",{frameWidth:48,frameHeight:48});
+  	this.load.spritesheet("jugadores5","cliente/assets/images/jugadores5.png",{frameWidth:48,frameHeight:48});
+	  this.load.spritesheet("jugadores6","cliente/assets/images/jugadores6.png",{frameWidth:48,frameHeight:52});
+	  this.load.spritesheet("portal","cliente/assets/images/portal.png",{frameWidth:48,frameHeight:48});
+    this.load.spritesheet("muertos","cliente/assets/images/muertos56.png",{frameWidth:56,frameHeight:50});
   }
 
   function create() {
-    console.log("entra en create");
     crear=this;
     map = crear.make.tilemap({ key: "map" });
 
@@ -119,33 +116,19 @@ function lanzarJuego(){
     spawnPoints[10] = map.findObject("Objects", obj => obj.name === "SpawnPoint10");
 
 
-    // Create a sprite with physics enabled via the physics system. The image used for the sprite has
-    // a bit of whitespace, so I'm using setSize & setOffset to control the size of the player's body.
-    // player = this.physics.add
-    //   .sprite(spawnPoint.x, spawnPoint.y, "atlas", "misa-front")
-    //   .setSize(30, 40)
-    //   .setOffset(0, 24);
-
-    // // Watch the player and worldLayer for collisions, for the duration of the scene:
-    //this.physics.add.collider(player, worldLayer);
-
-console.log("antes de animaciones");
-
-      const anims = crear.anims;
-      anims.create({
-        key: "jugador1-front-walk",
-        frames: anims.generateFrameNames("jugadores1", {
-          //prefix: "misa-left-walk.",
-          start: 6,
-          end: 8,
-          //zeroPad: 3
-        }),
-        //frameRate: 10,
-        repeat: -1
-      });
-      anims.create({
-        key: "jugador1-left-walk",
-        frames: anims.generateFrameNames("jugadores1", {
+    const anims = crear.anims;
+    anims.create({
+      key: "jugador1-front-walk",
+      frames: anims.generateFrameNames("jugadores1", {
+        start: 6,
+        end: 8,
+        //zeroPad: 3
+      }),
+      repeat: -1
+    });
+    anims.create({
+      key: "jugador1-left-walk",
+      frames: anims.generateFrameNames("jugadores1", {
           //prefix: "misa-left-walk.",
           start: 18,
           end: 20,
@@ -599,12 +582,6 @@ console.log("antes de animaciones");
         repeat: -1
       });
 
-console.log("despues de animaciones");
-
-    // const camera = this.cameras.main;
-    // camera.startFollow(player);
-    // camera.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
-
     cursors = crear.input.keyboard.createCursorKeys();
     remotos=crear.add.group();
     muertos=crear.add.group();
@@ -619,7 +596,7 @@ console.log("despues de animaciones");
 
     function crearColision(){
     if (crear && ws.impostor){
-      crear.physics.add.overlap(player,remotos,kill,()=>{return ataquesOn});
+      crear.physics.add.overlap(player,remotos,kill);
     }
   }  
 
@@ -640,7 +617,6 @@ console.log("despues de animaciones");
 
   var muerto = crear.physics.add.sprite(x,y,"muertos",numJugador);
   muertos.add(muerto);
-  
  }
 else{
   var x=jugadores[inocente].x;
@@ -653,14 +629,12 @@ else{
   jugadores[inocente].setVisible(false);
   remotos.remove(jugadores[inocente]);
 }
-    crear.physics.add.overlap(player,muertos,votacion);
+  crear.physics.add.overlap(player,muertos,votacion);
 }
   
 
   function votacion(sprite,muerto){
-    //comprobar si el jugador local pulsa "v"
-    //en ese caso, llamamos al servidor para lanzar votacion
-    if (teclaV.isDown){
+    if (ws.estado != "muerto" && teclaV.isDown && ws.impostor== false){
       ws.lanzarVotacion();
     }
   }
@@ -669,8 +643,7 @@ else{
     if (ws.impostor==false && ws.encargo==objeto.properties.tarea && teclaT.isDown && objeto.properties.disponible){
       objeto.properties.disponible=false;      
       console.log("realizar tarea "+ws.encargo);
-      ws.realizarTarea(); //o hacer la llamada dentro de cw
-      cw.mostrarModalTarea(ws.encargo);
+      ws.realizarTarea();
     }
   }
 
@@ -679,14 +652,9 @@ else{
     var num =ws.numJugador+1;
     player = crear.physics.add.sprite(spawnPoints[num].x, spawnPoints[num].y,"portal",0);   
 
-   // player.setSize (30, 30, 15, 15); 
-    // Watch the player and worldLayer for collisions, for the duration of the scene:
     crear.physics.add.collider(player, worldLayer);
-    console.log ("Colision 1");
-    crear.physics.add.collider(player, capaTareas,tareas,()=>{return tareasOn});
-    //crear.physics.add.collider(player2, worldLayer);
+    crear.physics.add.collider(player, capaTareas, tareas);
 
-console.log ("Colision 2");
     jugadores[nick]=player;
     jugadores[nick].nick=nick;
     jugadores[nick].numJugador=numJugador;
@@ -741,8 +709,7 @@ console.log ("Colision 2");
 
   function finPartida(data){
     final=true;
-    //remoto=undefined;
-    cw.mostrarModalSimple("Fin de la partida "+data);
+    cw.mostrarModalSimple("Se acabó la caza, "+data);
   }
 
   function update(time, delta) {
@@ -755,7 +722,6 @@ console.log ("Colision 2");
     if (!final){
     // Stop any previous movement from the last frame
     player.body.setVelocity(0);
-    //player2.body.setVelocity(0);
 
     // Horizontal movement
     if (cursors.left.isDown) {
@@ -791,14 +757,6 @@ console.log ("Colision 2");
       player.anims.play(nombre+"-front-walk", true);
     } else {
       player.anims.stop();
-
-
-
-      // If we were moving, pick and idle frame to use
-      // if (prevVelocity.x < 0) player.setTexture("gabe", "gabe-left-walk");
-      // else if (prevVelocity.x > 0) player.setTexture("gabe", "gabe-right-walk");
-      // else if (prevVelocity.y < 0) player.setTexture("gabe", "gabe-back-walk");
-      // else if (prevVelocity.y > 0) player.setTexture("gabe", "gabe-front-walk");
     }
   }
 }
