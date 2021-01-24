@@ -32,26 +32,30 @@ function lanzarJuego(){
   let cursors;
   let player;
   //let player2;
-  var jugadores={}; //la colección de jugadores remotos
+  var jugadores={}; //la colección de jugadores 
   let showDebug = false;
   let camera;
   var worldLayer;
   let map;
   var crear;
-  var spawnPoint;
+  var spawnPoint1, spawnPoint2, spawnPoint3, spawnPoint4, spawnPoint5, spawnPoint6, spawnPoint7, spawnPoint8, spawnPoint9, spawnPoint10;
   var recursos=[{frame:7,sprite:"jugador1"},{frame:4,sprite:"jugador2"},{frame:10,sprite:"jugador3"},{frame:1,sprite:"jugador4"},{frame:1,sprite:"jugador5"},{frame:1,sprite:"jugador6"},{frame:55,sprite:"jugador7"},{frame:49,sprite:"jugador8"},{frame:1,sprite:"jugador9"},{frame:52,sprite:"jugador10"}];
   var remotos;
   var muertos;
+  var spawnPoints;
   var capaTareas;
   var tareasOn=true;
   var ataquesOn=true;
   var final=false;
+  var tareasCompletadas=0;
+
+
 
   function preload() {
     console.log("entra en preload ");
 
-    this.load.image("tiles", "cliente/assets/tilesets/tuxmon-sample-32px-extruded.png");
-    this.load.tilemapTiledJSON("map", "cliente/assets/tilemaps/tuxemon-town2.json");
+    this.load.image("tiles", "cliente/assets/tilesets/completo.png");
+    this.load.tilemapTiledJSON("map", "cliente/assets/tilemaps/mimapa.json");
 
     // An atlas is a way to pack multiple images together into one texture. I'm using it to load all
     // the player animations (walking left, walking right, etc.) in one image. For more info see:
@@ -79,15 +83,20 @@ function lanzarJuego(){
 
     // Parameters are the name you gave the tileset in Tiled and then the key of the tileset image in
     // Phaser's cache (i.e. the name you used in preload)
-    const tileset = map.addTilesetImage("tuxmon-sample-32px-extruded", "tiles");
+    const tileset = map.addTilesetImage("32x32 mega", "tiles");
 
     // Parameters: layer name (or index) from Tiled, tileset, x, y
     const belowLayer = map.createStaticLayer("Below Player", tileset, 0, 0);
+    const rio = map.createStaticLayer("rio", tileset, 0, 0);
+    const rio2 = map.createStaticLayer("rio2", tileset, 0, 0);
+
     worldLayer = map.createStaticLayer("World", tileset, 0, 0);
-   // capaTareas = map.createStaticLayer("capaTareas", tileset, 0, 0);
+    capaTareas = map.createStaticLayer("CapaTareas", tileset, 0, 0);
     const aboveLayer = map.createStaticLayer("Above Player", tileset, 0, 0);
 
-    worldLayer.setCollisionByProperty({ collides: true });
+    worldLayer.setCollisionByExclusion([-1]);
+
+    capaTareas.setCollisionByExclusion([-1]);
  // capaTareas.setCollisionByProperty({ collides: true });
 
     // By default, everything gets depth sorted on the screen in the order we created things. Here, we
@@ -97,7 +106,18 @@ function lanzarJuego(){
 
     // Object layers in Tiled let you embed extra info into a map - like a spawn point or custom
     // collision shapes. In the tmx file, there's an object layer with a point named "Spawn Point"
-    spawnPoint = map.findObject("Objects", obj => obj.name === "Spawn Point");
+    spawnPoints=crear.add.group();
+    spawnPoints[1] = map.findObject("Objects", obj => obj.name === "SpawnPoint");
+    spawnPoints[2] = map.findObject("Objects", obj => obj.name === "SpawnPoint2");
+    spawnPoints[3] = map.findObject("Objects", obj => obj.name === "SpawnPoint3");
+    spawnPoints[4] = map.findObject("Objects", obj => obj.name === "SpawnPoint4");
+    spawnPoints[5] = map.findObject("Objects", obj => obj.name === "SpawnPoint5");
+    spawnPoints[6] = map.findObject("Objects", obj => obj.name === "SpawnPoint6");
+    spawnPoints[7] = map.findObject("Objects", obj => obj.name === "SpawnPoint7");
+    spawnPoints[8] = map.findObject("Objects", obj => obj.name === "SpawnPoint8");
+    spawnPoints[9] = map.findObject("Objects", obj => obj.name === "SpawnPoint9");
+    spawnPoints[10] = map.findObject("Objects", obj => obj.name === "SpawnPoint10");
+
 
     // Create a sprite with physics enabled via the physics system. The image used for the sprite has
     // a bit of whitespace, so I'm using setSize & setOffset to control the size of the player's body.
@@ -591,10 +611,10 @@ console.log("despues de animaciones");
     teclaA=crear.input.keyboard.addKey('a');
     teclaV=crear.input.keyboard.addKey('v');
     teclaT=crear.input.keyboard.addKey('t');
+    teclaX=crear.input.keyboard.addKey('x');
     lanzarJugador(ws.numJugador);
     ws.estoyDentro();
 
-    console.log("estoy dentor");
   }
 
     function crearColision(){
@@ -612,19 +632,30 @@ console.log("despues de animaciones");
   }
 //
   function dibujarMuereInocente(inocente){
-    var x=jugadores[inocente].x;
-    var y=jugadores[inocente].y;
-    var numJugador=jugadores[inocente].numJugador;
 
-    var muerto = crear.physics.add.sprite(x,y,"muertos",numJugador);
-    muertos.add(muerto);
+ if (ws.nick == inocente){
+  var x=player.x;
+  var y=player.y;
+  var numJugador=ws.numJugador;
 
-    jugadores[inocente].setTexture("muertos",numJugador);
-    //agregar jugadores[inocente] al grupo muertos    
+  var muerto = crear.physics.add.sprite(x,y,"muertos",numJugador);
+  muertos.add(muerto);
+  
+ }
+else{
+  var x=jugadores[inocente].x;
+  var y=jugadores[inocente].y;
+  var numJugador=jugadores[inocente].numJugador; 
 
+  var muerto = crear.physics.add.sprite(x,y,"muertos",numJugador);
+  muertos.add(muerto);
+
+  jugadores[inocente].setVisible(false);
+  remotos.remove(jugadores[inocente]);
+}
     crear.physics.add.overlap(player,muertos,votacion);
-  }
-  //
+}
+  
 
   function votacion(sprite,muerto){
     //comprobar si el jugador local pulsa "v"
@@ -635,8 +666,8 @@ console.log("despues de animaciones");
   }
 
   function tareas(sprite,objeto){
-    if (ws.encargo==objeto.properties.tarea && teclaT.isDown){
-      tareasOn=false;      
+    if (ws.impostor==false && ws.encargo==objeto.properties.tarea && teclaT.isDown && objeto.properties.disponible){
+      objeto.properties.disponible=false;      
       console.log("realizar tarea "+ws.encargo);
       ws.realizarTarea(); //o hacer la llamada dentro de cw
       cw.mostrarModalTarea(ws.encargo);
@@ -644,16 +675,22 @@ console.log("despues de animaciones");
   }
 
   function lanzarJugador(nick, numJugador){
-    var x=spawnPoint.x;
-    player = crear.physics.add.sprite(x, spawnPoint.y,"portal",0);    
+   
+    var num =ws.numJugador+1;
+    player = crear.physics.add.sprite(spawnPoints[num].x, spawnPoints[num].y,"portal",0);   
+
+   // player.setSize (30, 30, 15, 15); 
     // Watch the player and worldLayer for collisions, for the duration of the scene:
     crear.physics.add.collider(player, worldLayer);
-   // crear.physics.add.collider(player, capaTareas,tareas,()=>{return tareasOn});
+    console.log ("Colision 1");
+    crear.physics.add.collider(player, capaTareas,tareas,()=>{return tareasOn});
     //crear.physics.add.collider(player2, worldLayer);
 
+console.log ("Colision 2");
     jugadores[nick]=player;
     jugadores[nick].nick=nick;
     jugadores[nick].numJugador=numJugador;
+
 
     camera = crear.cameras.main;
     camera.startFollow(player);
@@ -662,8 +699,8 @@ console.log("despues de animaciones");
 
   function lanzarJugadorRemoto(nick,numJugador){
 
-    var x=spawnPoint.x;
-		jugadores[nick]=crear.physics.add.sprite(spawnPoint.x, spawnPoint.y,"portal",0);
+    var num =numJugador+1;
+		jugadores[nick]=crear.physics.add.sprite(spawnPoints[num].x, spawnPoints[num].y,"portal",0);
 	
     crear.physics.add.collider(jugadores[nick], worldLayer);
     jugadores[nick].nick=nick;
@@ -754,6 +791,8 @@ console.log("despues de animaciones");
       player.anims.play(nombre+"-front-walk", true);
     } else {
       player.anims.stop();
+
+
 
       // If we were moving, pick and idle frame to use
       // if (prevVelocity.x < 0) player.setTexture("gabe", "gabe-left-walk");

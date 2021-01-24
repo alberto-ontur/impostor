@@ -115,7 +115,7 @@ function Partida(num,owner,codigo,juego){
 	this.fase=new Inicial();
 	this.usuarios={};
 	this.elegido="no hay nadie elegido";
-	this.encargos=["jardines","mobiliario","basuras","calles"];
+	this.encargos=["huesos","raices","madera","seda","sangre","veneno","gemas","joyas","pocion","llamas"];
 	this.agregarUsuario=function(nick){
 		return this.fase.agregarUsuario(nick,this)
 	}
@@ -170,12 +170,30 @@ function Partida(num,owner,codigo,juego){
 		console.log("iniciar partida - servidor - partida");
 		this.fase.iniciarPartida(this);
 	}
+
+this.mezclarEncargos= function() {
+      var j, x, i;
+      //Recorremos el array del final hacia delante
+      for (i = this.encargos.length - 1; i > 0; i--) {
+        //Generamos una posicion comprendida entre los valores de nuestro array
+        j = Math.floor(Math.random() * (i + 1));
+        // Asignamos el valor de la posición actual a una variable
+        x = this.encargos[i];
+        //Intercambiamos los valores de las dos posiciones
+        this.encargos[i] = this.encargos[j];
+        this.encargos[j] = x;
+      }
+    }
+
 	this.puedeIniciarPartida=function(){
+		this.mezclarEncargos();
 		this.asignarEncargos();
 		this.asignarImpostor();
 		this.fase=new Jugando();
 		console.log("Partida "+this.codigo+" estado "+this.fase.nombre);		
 	}
+
+
 	this.abandonarPartida=function(nick){
 		this.fase.abandonarPartida(nick,this);
 	}
